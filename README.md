@@ -36,17 +36,6 @@ source venv/bin/activate       # On Windows: venv\Scripts\activate
 pip install flask flask_sqlalchemy requests fpdf
 ```
 
-4. **Set your OpenWeatherMap API key in `app.py`:**
-
-Edit this line:
-
-```python
-API_KEY = "your_api_key_here"
-```
-
-Replace `"your_api_key_here"` with your actual OpenWeatherMap API key.
-
----
 
 ### ▶️ Running the App
 
