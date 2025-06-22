@@ -30,12 +30,6 @@ python -m venv venv
 source venv/bin/activate       # On Windows: venv\Scripts\activate
 ```
 
-3. **Install required Python packages:**
-
-```bash
-pip install flask flask_sqlalchemy requests fpdf
-```
-
 
 ### ▶️ Running the App
 
