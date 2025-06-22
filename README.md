@@ -88,6 +88,6 @@ weather-app/
 
 **Jitendra Sai Vigrahala**  
 📍 Tallahassee, FL  
-📧 jv23c@fsu.edu  
+📧 jitendrasai333@gmail.com
 
 
