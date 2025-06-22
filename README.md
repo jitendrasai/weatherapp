@@ -1,5 +1,5 @@
 
-# 🌤️ Weather App by Jitendra Sai
+# Weather App by Jitendra Sai
 
 
 
@@ -19,8 +19,8 @@
 1. **Clone or download this repository:**
 
 ```bash
-git clone https://github.com/jitendrasaiv/weather-app-python.git
-cd weather-app-python
+git clone https://github.com/jitendrasai/weatherapp.git
+cd weatherapp
 ```
 
 2. **(Optional) Create a virtual environment:**
