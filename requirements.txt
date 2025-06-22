@@ -2,3 +2,4 @@ Flask
 Flask_SQLAlchemy
 requests
 fpdf
+pip freeze > requirements.txt
