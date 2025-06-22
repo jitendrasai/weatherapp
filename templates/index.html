@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Weather App by Jitendra Sai</title>
+    <style>
+        body {
+            font-family: Arial;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+
+        input,
+        button {
+            margin: 5px;
+        }
+
+        table,
+        th,
+        td {
+            border: 1px solid black;
+            border-collapse: collapse;
+            padding: 6px;
+        }
+
+        .card {
+            display: inline-block;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            padding: 10px;
+            margin: 10px;
+            background: white;
+        }
+
+        iframe {
+            margin-top: 10px;
+            border: none;
+            width: 100%;
+            height: 250px;
+        }
+
+        .quote-box {
+            background: #fff;
+            padding: 10px;
+            margin-top: 20px;
+            border-left: 4px solid #007acc;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Weather App by Jitendra Sai</h1>
+    <form method="POST" id="weather-form">
+        <input type="text" name="location" placeholder="Enter city name">
+        <input type="hidden" id="latitude" name="latitude">
+        <input type="hidden" id="longitude" name="longitude">
+        <button type="submit">Get Weather</button>
+        <button type="button" onclick="getLocation()">📍 Use My Location</button>
+    </form>
+
+    <script>
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function (position) {
+                    document.getElementById("latitude").value = position.coords.latitude;
+                    document.getElementById("longitude").value = position.coords.longitude;
+                    document.getElementById("weather-form").submit();
+                }, function (error) {
+                    alert("Error getting location: " + error.message);
+                });
+            } else {
+                alert("Geolocation is not supported by this browser.");
+            }
+        }
+    </script>
+
+
+    <br>
+    <a
+        href="/export/json?filter_location={{ request.args.get('filter_location', '') }}&start_date={{ request.args.get('start_date', '') }}&end_date={{ request.args.get('end_date', '') }}">Export
+        JSON</a>
+    <a
+        href="/export/csv?filter_location={{ request.args.get('filter_location', '') }}&start_date={{ request.args.get('start_date', '') }}&end_date={{ request.args.get('end_date', '') }}">Export
+        CSV</a>
+    <a
+        href="/export/pdf?filter_location={{ request.args.get('filter_location', '') }}&start_date={{ request.args.get('start_date', '') }}&end_date={{ request.args.get('end_date', '') }}">Export
+        PDF</a>
+
+    {% if current %}
+    <h2>Weather in {{ request.form.location or 'your area' }}</h2>
+    <p><b>Today</b><br>
+        {{ current.dt_txt }}<br>
+        {{ current.weather[0].description }}<br>
+        🌡 Temp: {{ current.main.temp }}°C<br>
+        💨 Wind: {{ current.wind.speed }} m/s<br>
+        💧 Humidity: {{ current.main.humidity }}%<br>
+        📊 Pressure: {{ current.main.pressure }} hPa<br>
+        🏙 City: {{ current.city_name if current.city_name else (request.form.location or 'Unknown') }}
+    </p>
+
+    {% if coords %}
+    <iframe src="https://www.google.com/maps?q={{ coords.lat }},{{ coords.lon }}&output=embed"></iframe>
+    {% endif %}
+
+    <button onclick="document.getElementById('forecast').style.display='block'">Show 5-Day Forecast</button>
+    {% endif %}
+
+
+    <div id="forecast" style="display:none;">
+        {% if forecast %}
+        {% set daily = {} %}
+        {% for entry in forecast %}
+        {% set date = entry.dt_txt.split(" ")[0] %}
+        {% if date not in daily %}
+        {% set _ = daily.update({date: entry}) %}
+        {% endif %}
+        {% endfor %}
+        {% set daily_items = daily.items() | list %}
+        {% for date, day in daily_items[:5] %}
+        <div class="card">
+            <b>{{ date }}</b><br>
+            {{ day.weather[0].description }}<br>
+            🌡 {{ day.main.temp }}°C<br>
+            📊 {{ day.main.pressure }} hPa<br>
+            💧 {{ day.main.humidity }}%<br>
+            💨 {{ day.wind.speed }} m/s
+        </div>
+        {% endfor %}
+        {% endif %}
+    </div>
+
+
+    {% if videos %}
+    <h3>🎥 Travel videos from {{ request.form.location }}</h3>
+    {% for link in videos %}
+    <a href="{{ link }}" target="_blank">{{ link }}</a><br>
+    {% endfor %}
+    {% endif %}
+
+    {% if quote %}
+    <div class="quote-box">
+        <p>💬 "{{ quote['content'] }}"</p>
+        <p><b>— {{ quote['author'] }}</b></p>
+    </div>
+    {% endif %}
+
+    <h3>🔍 Weather Record Search by Date Range</h3>
+    <form method="GET" action="/">
+        <input name="filter_location" placeholder="Location">
+        <input type="date" name="start_date">
+        <input type="date" name="end_date">
+        <button type="submit">Search</button>
+    </form>
+
+    <h3>➕ Create Custom Forecast</h3>
+    <form method="POST" action="/add">
+        <input name="location" placeholder="Location" required>
+        <input type="date" name="date" required>
+        <input name="temp" placeholder="Temp °C" required>
+        <input name="humidity" placeholder="Humidity %" required>
+        <input name="pressure" placeholder="Pressure hPa" required>
+        <input name="wind_speed" placeholder="Wind Speed m/s" required>
+        <button type="submit">Add Forecast</button>
+    </form>
+
+    <h3>📂 Weather Records</h3>
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Location</th>
+            <th>Date</th>
+            <th>Temp</th>
+            <th>Humidity</th>
+            <th>Pressure</th>
+            <th>Wind</th>
+        </tr>
+        {% for r in records %}
+        <tr>
+            <td>{{ r.id }}</td>
+            <td>{{ r.location }}</td>
+            <td>{{ r.date }}</td>
+            <td>
+                <form action="/update/{{ r.id }}" method="POST">
+                    <input name="temperature" value="{{ r.temperature }}" size="4">
+            </td>
+            <td>
+                <input name="humidity" value="{{ r.humidity }}" size="4">
+            </td>
+            <td>
+                <input name="pressure" value="{{ r.pressure }}" size="4">
+            </td>
+            <td>
+                <input name="wind_speed" value="{{ r.wind_speed }}" size="4">
+                <button type="submit">Update</button>
+                </form>
+                <form action="/delete/{{ r.id }}" method="GET" style="display:inline;">
+                    <button type="submit" style="background:red;color:white;">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h3>👤 About Me</h3>
+    <p><b>Jitendra Sai Vigrahala</b><br>
+        📍 Tallahassee, FL<br>
+        📧 jitendrasai333@gmail.com<br>
+        🔗 <a href="https://github.com/jitendrasai?tab=repositories">GitHub</a><br>
+        🔗 <a href="https://www.linkedin.com/in/jitendra-sai-vigrahala-74321617a/">LinkedIn</a></p>
+
+    <h3>🏢 PM Accelerator</h3>
+    <p>The Product Manager Accelerator Program is designed to support PM professionals through every stage of their
+        careers.<br>
+        🔗 <a href="https://www.linkedin.com/school/pmaccelerator/">Learn more</a></p>
+</body>
+
+</html>
