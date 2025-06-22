@@ -91,8 +91,3 @@ weather-app/
 📧 jv23c@fsu.edu  
 
 
----
-
-## 📜 License
-
-This project is for educational and demonstration purposes only. Free to use and modify.
